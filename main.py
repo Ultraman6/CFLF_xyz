@@ -8,9 +8,9 @@ import torch.nn.functional as F
 # ... test_model 函数保持不变 ...
 
 def main():
-    num_clients = 1
-    global_epochs = 1  # 全局轮次
-    local_epochs = 1    # 本地轮次
+    num_clients = 10
+    global_epochs = 2  # 全局轮次
+    local_epochs = 5    # 本地轮次
     print(torch.cuda.is_available())
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")

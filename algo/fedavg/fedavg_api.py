@@ -9,14 +9,14 @@ from data import load_data, split_data
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 
-from data.datasets import split_iid
+from data.datasets import split_iid, split_non_iid_by_label
 
 
 def train_client(client, global_model):
     return client.train(global_model)
 def run_federated_learning(num_clients, global_epochs, local_epochs, device):
     dataset = load_data()
-    clients_data = split_iid(dataset, num_clients)
+    clients_data = split_non_iid_by_label(dataset, num_clients, 0.5)
 
     server = Server(device)
     clients = [Client(client_data, device, local_epochs) for client_data in clients_data]
