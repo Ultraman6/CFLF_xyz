@@ -1,8 +1,10 @@
 import random
 
 import numpy as np
-from torch.utils.data import Subset
+from torch.utils.data import Subset, random_split
 from torchvision import datasets, transforms
+
+from data import get_data_loader
 
 
 def load_data(train=True):
@@ -11,29 +13,31 @@ def load_data(train=True):
     return dataset
 
 
+def load_data_with_validation(train=True, validation_split=0.01):
+    dataset = load_data(train)
+    if train:
+        val_size = int(len(dataset) * validation_split)
+        train_size = len(dataset) - val_size
+        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+        return get_data_loader(val_dataset), val_size
+    else:
+        print("服务器验证集大小为"+str(len(dataset)))
+        return dataset, len(dataset)
+
+
 def split_data(dataset, num_clients):
-    data_size = len(dataset)
-    client_data_size = data_size // num_clients
-    clients_data = []
-    for i in range(num_clients):
-        start, end = i * client_data_size, (i + 1) * client_data_size
-        subset = Subset(dataset, range(start, end))
-        clients_data.append(subset)
-    return clients_data
-
-
-def split_iid(dataset, num_clients):
     total_size = len(dataset)
     indices = list(range(total_size))
-    random.shuffle(indices)
-    split_size = total_size // num_clients
+    np.random.shuffle(indices)
+    split_size = total_size // num_clients # 将数据装载好在分配
+    return [(get_data_loader(Subset(dataset, indices[i * split_size:(i + 1) * split_size])), split_size) for i in range(num_clients)]
 
-    clients_data = []
-    for i in range(num_clients):
-        client_indices = indices[i * split_size: (i + 1) * split_size]
-        clients_data.append(Subset(dataset, client_indices))
 
-    return clients_data
+def split_iid(train_dataset, test_dataset, num_clients):
+    train_data_splits = split_data(train_dataset, num_clients)
+    test_data_splits = split_data(test_dataset, num_clients)
+    client_dataloaders = [(train_data_splits[i], test_data_splits[i]) for i in range(num_clients)]
+    return client_dataloaders
 
 
 def split_non_iid_by_label(dataset, num_clients, imbalance_factor):
