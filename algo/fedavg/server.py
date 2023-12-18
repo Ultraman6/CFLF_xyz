@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from data import load_data
-from model.cnn import SimpleCNN
+from model.CNN.cnn import SimpleCNN
 import torch.nn.functional as F
 
 

@@ -1,0 +1,1 @@
+from model.CNN.cnn import SimpleCNN

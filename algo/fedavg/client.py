@@ -1,13 +1,15 @@
+import copy
+
 import torch
 import torch.optim as optim
-from model.cnn import SimpleCNN
+from model.CNN.cnn import SimpleCNN
 from data.dataloader import get_data_loader
 
 
 class Client:
     def __init__(self, id, dataset, device, local_epochs):
         self.id = id
-        self.model = None
+        self.model = SimpleCNN()
         self.local_train_data = dataset[0][0]
         self.local_test_data = dataset[1][0]
         self.local_train_num = dataset[0][1]
@@ -22,7 +24,7 @@ class Client:
         self.local_sample_number = local_sample_number
 
     def train(self, global_model):
-        self.model.load_state_dict(global_model.state_dict())
+        self.model = global_model
         self.model.to(self.device)  # 确保模型在GPU上
         self.model.train()
         optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.5)
@@ -34,4 +36,4 @@ class Client:
                 loss = torch.nn.CrossEntropyLoss()(output, target)
                 loss.backward()
                 optimizer.step()
-        return self.local_train_num, self.model.state_dict()
+        return self.local_train_num, copy.deepcopy(self.model.state_dict())

@@ -8,9 +8,8 @@ class ModelTrainer:
         self.model = model.to(device)
         self.device = device
 
-    def train(self, train_dataset, epochs, lr=0.01, batch_size=16):
+    def train(self, train_loader, epochs, lr=0.01):
         self.model.train()
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         optimizer = torch.optim.SGD(self.model.parameters(), lr=lr)
 
         for epoch in range(epochs):
@@ -24,7 +23,7 @@ class ModelTrainer:
                 optimizer.step()
                 progress_bar.set_postfix(loss=loss.item())
 
-    def evaluate(self, test_dataset, batch_size=16):
+    def evaluate(self, test_dataset, batch_size=8):
         self.model.eval()
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
         test_loss = 0
